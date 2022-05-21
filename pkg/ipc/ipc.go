@@ -340,14 +340,14 @@ func (env *Env) parseOutput(p *prog.Prog, opts *ExecOpts) (*ProgInfo, error) {
 		var inf *CallInfo
 		if reply.index != extraReplyIndex {
 			if int(reply.index) >= len(info.Calls) {
-				return nil, fmt.Errorf("bad call %v index %v/%v", i, reply.index, len(info.Calls))
+				return nil, fmt.Errorf("bad call %v index %v/%v: %#v", i, reply.index, len(info.Calls), reply)
 			}
 			if num := p.Calls[reply.index].Meta.ID; int(reply.num) != num {
-				return nil, fmt.Errorf("wrong call %v num %v/%v", i, reply.num, num)
+				return nil, fmt.Errorf("wrong call %v num %v/%v: %#v", i, reply.num, num, reply)
 			}
 			inf = &info.Calls[reply.index]
 			if inf.Flags != 0 || inf.Signal != nil {
-				return nil, fmt.Errorf("duplicate reply for call %v/%v/%v", i, reply.index, reply.num)
+				return nil, fmt.Errorf("duplicate reply for call %v/%v/%v: %v", i, reply.index, reply.num, reply)
 			}
 			inf.Errno = int(reply.errno)
 			inf.Flags = CallFlags(reply.flags)
@@ -532,6 +532,7 @@ type executeReply struct {
 }
 
 type callReply struct {
+	magic      uint32
 	index      uint32 // call index in the program
 	num        uint32 // syscall number (for cross-checking)
 	errno      uint32

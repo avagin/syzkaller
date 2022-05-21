@@ -329,6 +329,7 @@ const uint32 call_flag_fault_injected = 1 << 3;
 
 struct call_reply {
 	execute_reply header;
+        uint32 magic;
 	uint32 call_index;
 	uint32 call_num;
 	uint32 reserrno;
@@ -1104,6 +1105,7 @@ void write_call_output(thread_t* th, bool finished)
 			      (th->fault_injected ? call_flag_fault_injected : 0);
 	}
 #if SYZ_EXECUTOR_USES_SHMEM
+        write_output(0x43218765);
 	write_output(th->call_index);
 	write_output(th->call_num);
 	write_output(reserrno);
@@ -1144,7 +1146,7 @@ void write_call_output(thread_t* th, bool finished)
 	completed++;
 	write_completed(completed);
 #else
-	call_reply reply;
+	call_reply reply = {};
 	reply.header.magic = kOutMagic;
 	reply.header.done = 0;
 	reply.header.status = 0;
